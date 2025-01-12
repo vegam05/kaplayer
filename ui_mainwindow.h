@@ -27,6 +27,10 @@ public:
     QWidget *centralwidget;
     QVBoxLayout *verticalLayout;
     QVBoxLayout *videoLayout;
+    QHBoxLayout *progressLayout;
+    QLabel *currentTimeLabel;
+    QSlider *positionSlider;
+    QLabel *totalTimeLabel;
     QHBoxLayout *controlLayout;
     QPushButton *openButton;
     QPushButton *playButton;
@@ -49,6 +53,29 @@ public:
         videoLayout->setObjectName(QString::fromUtf8("videoLayout"));
 
         verticalLayout->addLayout(videoLayout);
+
+        progressLayout = new QHBoxLayout();
+        progressLayout->setObjectName(QString::fromUtf8("progressLayout"));
+        currentTimeLabel = new QLabel(centralwidget);
+        currentTimeLabel->setObjectName(QString::fromUtf8("currentTimeLabel"));
+        currentTimeLabel->setMinimumWidth(50);
+
+        progressLayout->addWidget(currentTimeLabel);
+
+        positionSlider = new QSlider(centralwidget);
+        positionSlider->setObjectName(QString::fromUtf8("positionSlider"));
+        positionSlider->setOrientation(Qt::Horizontal);
+
+        progressLayout->addWidget(positionSlider);
+
+        totalTimeLabel = new QLabel(centralwidget);
+        totalTimeLabel->setObjectName(QString::fromUtf8("totalTimeLabel"));
+        totalTimeLabel->setMinimumWidth(50);
+
+        progressLayout->addWidget(totalTimeLabel);
+
+
+        verticalLayout->addLayout(progressLayout);
 
         controlLayout = new QHBoxLayout();
         controlLayout->setObjectName(QString::fromUtf8("controlLayout"));
@@ -104,6 +131,8 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Media Player", nullptr));
+        currentTimeLabel->setText(QCoreApplication::translate("MainWindow", "0:00", nullptr));
+        totalTimeLabel->setText(QCoreApplication::translate("MainWindow", "0:00", nullptr));
         openButton->setText(QCoreApplication::translate("MainWindow", "Open", nullptr));
         playButton->setText(QCoreApplication::translate("MainWindow", "Play", nullptr));
         pauseButton->setText(QCoreApplication::translate("MainWindow", "Pause", nullptr));

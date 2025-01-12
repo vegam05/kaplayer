@@ -20,6 +20,39 @@
       <layout class="QVBoxLayout" name="videoLayout"/>
     </item>
     
+    <!-- Position Slider and Time Labels -->
+    <item>
+      <layout class="QHBoxLayout" name="progressLayout">
+        <item>
+          <widget class="QLabel" name="currentTimeLabel">
+            <property name="text">
+              <string>0:00</string>
+            </property>
+            <property name="minimumWidth">
+              <number>50</number>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QSlider" name="positionSlider">
+            <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+            </property>
+          </widget>
+        </item>
+        <item>
+          <widget class="QLabel" name="totalTimeLabel">
+            <property name="text">
+              <string>0:00</string>
+            </property>
+            <property name="minimumWidth">
+              <number>50</number>
+            </property>
+          </widget>
+        </item>
+      </layout>
+    </item>
+    
     <!-- Control Buttons -->
     <item>
       <layout class="QHBoxLayout" name="controlLayout">

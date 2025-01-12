@@ -19,19 +19,34 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
     connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::stop);
     
-    // Use the volume slider from the UI
+    // Volume connections
     connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
     connect(mediaPlayer, &QMediaPlayer::volumeChanged, ui->volumeSlider, &QSlider::setValue);
+
+    // Media position connections
+    connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
+    connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
+    connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
 }
 
 MainWindow::~MainWindow() {
     delete ui;
 }
 
+QString MainWindow::formatTime(qint64 milliseconds) {
+    qint64 seconds = milliseconds / 1000;
+    qint64 minutes = seconds / 60;
+    seconds %= 60;
+    return QString("%1:%2")
+        .arg(minutes)
+        .arg(seconds, 2, 10, QChar('0'));
+}
+
 void MainWindow::openFile() {
     QString fileName = QFileDialog::getOpenFileName(this, "Open Media File");
     if (!fileName.isEmpty()) {
         mediaPlayer->setMedia(QUrl::fromLocalFile(fileName));
+        ui->positionSlider->setValue(0);
     }
 }
 
@@ -45,6 +60,21 @@ void MainWindow::pause() {
 
 void MainWindow::stop() {
     mediaPlayer->stop();
-    // Reset the media position to the beginning
     mediaPlayer->setPosition(0);
+    ui->positionSlider->setValue(0);
+}
+
+void MainWindow::updateDuration(qint64 duration) {
+    ui->positionSlider->setRange(0, duration);
+    ui->totalTimeLabel->setText(formatTime(duration));
+}
+
+void MainWindow::updatePosition(qint64 position) {
+    if (!ui->positionSlider->isSliderDown())
+        ui->positionSlider->setValue(position);
+    ui->currentTimeLabel->setText(formatTime(position));
+}
+
+void MainWindow::setPosition(int position) {
+    mediaPlayer->setPosition(position);
 }

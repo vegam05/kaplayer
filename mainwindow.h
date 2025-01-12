@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QVideoWidget>
-#include <QSlider>
 
 namespace Ui { class MainWindow; }
 
@@ -19,14 +18,16 @@ private:
     Ui::MainWindow *ui;
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;
-    QSlider *volumeSlider;
+    QString formatTime(qint64 milliseconds);  // Add this helper function
 
 private slots:
     void openFile();
     void play();
     void pause();
     void stop();
+    void updateDuration(qint64 duration);     // Add this
+    void updatePosition(qint64 position);     // Add this
+    void setPosition(int position);           // Add this
 };
 
 #endif // MAINWINDOW_H
-
