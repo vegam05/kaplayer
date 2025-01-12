@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
-add_executable(MyMediaPlayer
+add_executable(kaplayer
     main.cpp
     mainwindow.cpp
     mainwindow.h
 )
 
-target_link_libraries(MyMediaPlayer PRIVATE Qt6::Widgets Qt6::Multimedia)
+target_link_libraries(kaplayer PRIVATE Qt6::Widgets Qt6::Multimedia)
 
