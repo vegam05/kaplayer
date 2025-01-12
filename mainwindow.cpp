@@ -6,26 +6,22 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , mediaPlayer(new QMediaPlayer(this))
-    , videoWidget(new QVideoWidget(this))
-    , volumeSlider(new QSlider(Qt::Horizontal, this)) {
+    , videoWidget(new QVideoWidget(this)) {
     ui->setupUi(this);
 
     // Set up video output
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
 
-    // Set up volume slider
-    volumeSlider->setRange(0, 100);  // Volume range
-    volumeSlider->setValue(50);     // Default volume
-    ui->controlLayout->addWidget(volumeSlider);
-
     // Connect signals and slots
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::play);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
     connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::stop);
-    connect(volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
-    connect(mediaPlayer, &QMediaPlayer::volumeChanged, volumeSlider, &QSlider::setValue);
+    
+    // Use the volume slider from the UI
+    connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
+    connect(mediaPlayer, &QMediaPlayer::volumeChanged, ui->volumeSlider, &QSlider::setValue);
 }
 
 MainWindow::~MainWindow() {
@@ -49,5 +45,6 @@ void MainWindow::pause() {
 
 void MainWindow::stop() {
     mediaPlayer->stop();
+    // Reset the media position to the beginning
+    mediaPlayer->setPosition(0);
 }
-
