@@ -87,6 +87,34 @@
       </layout>
     </item>
     
+    <!-- Brightness Slider -->
+<item>
+  <layout class="QHBoxLayout" name="brightnessLayout">
+    <item>
+     <widget class="QLabel" name="brightnessLabel">
+      <property name="text">
+       <string>Brightness:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSlider" name="brightnessSlider">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="minimum">
+       <number>-100</number>
+      </property>
+      <property name="maximum">
+       <number>100</number>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
+  </layout>
+</item>
     <!-- Volume Slider -->
     <item>
       <layout class="QHBoxLayout" name="volumeLayout">
