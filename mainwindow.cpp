@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
-#include <QGraphicsOpacityEffect>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -14,28 +14,21 @@ MainWindow::MainWindow(QWidget *parent)
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
 
-    // Create color effect for brightness control
-    colorEffect = new QGraphicsColorizeEffect(this);
-    videoWidget->setGraphicsEffect(colorEffect);
-    colorEffect->setStrength(0);  // Initial strength
-
     // Connect all existing signals and slots
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::play);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
     connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::stop);
     
-    // Volume connections
-    connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
-    connect(mediaPlayer, &QMediaPlayer::volumeChanged, ui->volumeSlider, &QSlider::setValue);
-
     // Media position connections
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
     connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
+    
+    // Volume connections
+    connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
+    connect(mediaPlayer, &QMediaPlayer::volumeChanged, ui->volumeSlider, &QSlider::setValue);
 
-    // Brightness connection
-    connect(ui->brightnessSlider, &QSlider::valueChanged, this, &MainWindow::setBrightness);
 }
 
 MainWindow::~MainWindow() {
@@ -88,14 +81,3 @@ void MainWindow::setPosition(int position) {
     mediaPlayer->setPosition(position);
 }
 
-void MainWindow::setBrightness(int value) {
-    // Convert slider value (-100 to 100) to color effect strength (0 to 1)
-    qreal strength = qAbs(value) / 100.0;
-    colorEffect->setStrength(strength);
-    
-    if (value > 0) {
-        colorEffect->setColor(Qt::white);  // Brighten
-    } else {
-        colorEffect->setColor(Qt::black);  // Darken
-    }
-}

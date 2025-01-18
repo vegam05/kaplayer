@@ -4,11 +4,8 @@
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QVideoWidget>
-#include <QGraphicsVideoItem>
-#include <QGraphicsView>
 #include <QGraphicsScene>
-#include <QGraphicsEffect>
-#include <QGraphicsColorizeEffect> 
+#include <QGraphicsView>
 
 namespace Ui { class MainWindow; }
 
@@ -23,11 +20,8 @@ private:
     Ui::MainWindow *ui;
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;
+    QGraphicsOpacityEffect *brightnessEffect;  // Changed to opacity effect
     QString formatTime(qint64 milliseconds);
-    QGraphicsVideoItem *videoItem;
-    QGraphicsScene *scene;
-    QGraphicsView *view;
-    QGraphicsColorizeEffect *colorEffect;
 
 private slots:
     void openFile();
@@ -37,7 +31,6 @@ private slots:
     void updateDuration(qint64 duration);
     void updatePosition(qint64 position);
     void setPosition(int position);
-    void setBrightness(int value); // New slot for brightness
 };
 
 #endif // MAINWINDOW_H
