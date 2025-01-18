@@ -20,7 +20,6 @@ private:
     Ui::MainWindow *ui;
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;
-    QGraphicsOpacityEffect *brightnessEffect;  // Changed to opacity effect
     QString formatTime(qint64 milliseconds);
 
 private slots:
