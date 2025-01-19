@@ -4,8 +4,6 @@
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QVideoWidget>
-#include <QGraphicsScene>
-#include <QGraphicsView>
 
 namespace Ui { class MainWindow; }
 
@@ -21,6 +19,8 @@ private:
     QMediaPlayer *mediaPlayer;
     QVideoWidget *videoWidget;
     QString formatTime(qint64 milliseconds);
+    bool isFullScreen;  // Add this to track fullscreen state
+    QRect normalGeometry;
 
 private slots:
     void openFile();
@@ -30,6 +30,8 @@ private slots:
     void updateDuration(qint64 duration);
     void updatePosition(qint64 position);
     void setPosition(int position);
+    void toggleFullScreen();  // Add this for fullscreen functionality
+    void keyPressEvent(QKeyEvent *event) override;  // Add this to handle ESC key
 };
 
 #endif // MAINWINDOW_H

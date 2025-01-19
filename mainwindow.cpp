@@ -1,35 +1,75 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
-
+#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , mediaPlayer(new QMediaPlayer(this))
-    , videoWidget(new QVideoWidget(this)) {
+    , videoWidget(new QVideoWidget(this))
+    , isFullScreen(false) {
     ui->setupUi(this);
 
     // Set up video output
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
 
-    // Connect all existing signals and slots
+    // Connect all signals and slots
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::play);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
     connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::stop);
-    
-    // Media position connections
-    connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
-    connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
-    connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
+    connect(ui->fullscreenButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
     
     // Volume connections
     connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
     connect(mediaPlayer, &QMediaPlayer::volumeChanged, ui->volumeSlider, &QSlider::setValue);
 
+    // Media position connections
+    connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
+    connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
+    connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
+
+    // Set video widget's size policy
+    videoWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
+
+void MainWindow::toggleFullScreen() {
+    if (!isFullScreen) {
+        // Save normal window geometry
+        normalGeometry = this->geometry();
+        
+        // Hide all controls
+        ui->controlLayout->parentWidget()->hide();
+        ui->volumeLayout->parentWidget()->hide();
+        ui->progressLayout->parentWidget()->hide();
+        
+        // Make window fullscreen
+        showFullScreen();
+        videoWidget->setFullScreen(true);
+    } else {
+        // Restore all controls
+        ui->controlLayout->parentWidget()->show();
+        ui->volumeLayout->parentWidget()->show();
+        ui->progressLayout->parentWidget()->show();
+        
+        // Restore normal window
+        showNormal();
+        setGeometry(normalGeometry);
+        videoWidget->setFullScreen(false);
+    }
+    isFullScreen = !isFullScreen;
+}
+
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape && isFullScreen) {
+        toggleFullScreen();
+    }
+    QMainWindow::keyPressEvent(event);
+}
+
 
 MainWindow::~MainWindow() {
     delete ui;

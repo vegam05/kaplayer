@@ -86,7 +86,16 @@
         </item>
       </layout>
     </item>
-    
+
+    <!--Full screen toggle-->
+    <item>
+ <widget class="QPushButton" name="fullscreenButton">
+  <property name="text">
+   <string>Full Screen</string>
+  </property>
+ </widget>
+</item>
+
     <!-- Volume Slider -->
     <item>
       <layout class="QHBoxLayout" name="volumeLayout">
