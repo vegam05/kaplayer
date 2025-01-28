@@ -4,32 +4,32 @@
 #include <QKeyEvent>
 #include <QMediaPlayer>
 #include <QVideoWidget>
-#include <QTimer> // Include QTimer
+#include <QTimer> 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , mediaPlayer(new QMediaPlayer(this))
     , videoWidget(new QVideoWidget(this))
-    , controlHideTimer(new QTimer(this)) // Initialize controlHideTimer
+    , controlHideTimer(new QTimer(this)) 
     , isPlaying(false)
     , isFullScreen(false)
 {
     ui->setupUi(this);
 
-    // Set up video widget
+    
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
 
-    // Initialize the control hide timer
-    controlHideTimer->setInterval(3000); // Hide controls after 3 seconds of inactivity
+    
+    controlHideTimer->setInterval(3000); 
     connect(controlHideTimer, &QTimer::timeout, this, &MainWindow::hideControls);
 
-    // Show controls when the mouse moves
+
     videoWidget->setMouseTracking(true);
     videoWidget->installEventFilter(this);
 
-    // Connect UI elements to functionalities
+    
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::play);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
@@ -38,15 +38,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
     connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
 
-    // Initialize volume
+    
     ui->volumeSlider->setValue(50);
     mediaPlayer->setVolume(50);
 
-    // Update position and duration
+    
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
 
-    // Initialize button states
+    
     ui->pauseButton->setEnabled(false);
 }
 
@@ -62,7 +62,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_F11) {
         toggleFullScreen();
     } else if (event->key() == Qt::Key_Escape && isFullScreen) {
-        toggleFullScreen(); // Exit full-screen mode when Esc is pressed
+        toggleFullScreen(); 
     } else {
         QMainWindow::keyPressEvent(event);
     }
@@ -97,22 +97,22 @@ void MainWindow::showControls()
         ui->volumeSlider->setVisible(true);
         ui->volumeLabel->setVisible(true);
         ui->fullscreenButton->setVisible(true);
-        controlHideTimer->start(); // Restart the timer
+        controlHideTimer->start(); 
     }
 }
 
 void MainWindow::toggleFullScreen()
 {
     if (isFullScreen) {
-        showNormal(); // Exit full-screen mode for the main window
-        videoWidget->setFullScreen(false); // Exit full-screen mode for the video widget
-        showControls(); // Show controls when exiting full-screen
-        controlHideTimer->stop(); // Stop the timer
+        showNormal(); 
+        videoWidget->setFullScreen(false); 
+        showControls(); 
+        controlHideTimer->stop(); 
     } else {
-        showFullScreen(); // Enter full-screen mode for the main window
-        videoWidget->setFullScreen(true); // Enter full-screen mode for the video widget
-        showControls(); // Show controls initially
-        controlHideTimer->start(); // Start the timer
+        showFullScreen(); 
+        videoWidget->setFullScreen(true); 
+        showControls(); 
+        controlHideTimer->start(); 
     }
     isFullScreen = !isFullScreen;
 }
@@ -173,7 +173,6 @@ void MainWindow::updateDuration(qint64 duration)
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == videoWidget && event->type() == QEvent::MouseMove) {
-        showControls(); // Show controls when the mouse moves
-    }
+        showControls(); 
     return QMainWindow::eventFilter(obj, event);
 }
