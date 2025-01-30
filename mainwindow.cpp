@@ -73,35 +73,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 void MainWindow::hideControls()
 {
     if (isFullScreen) {
-        ui->openButton->setVisible(false);
-        ui->playButton->setVisible(false);
-        ui->pauseButton->setVisible(false);
-        ui->stopButton->setVisible(false);
-        ui->positionSlider->setVisible(false);
-        ui->currentTimeLabel->setVisible(false);
-        ui->totalTimeLabel->setVisible(false);
-        ui->volumeSlider->setVisible(false);
-        ui->volumeLabel->setVisible(false);
-        ui->fullscreenButton->setVisible(false);
-        ui->controlsOverlay->setVisible(false);
+        ui->controlsOverlay->setVisible(false); // Hide entire overlay
     }
 }
 
 void MainWindow::showControls()
 {
     if (isFullScreen) {
-        ui->openButton->setVisible(true);
-        ui->playButton->setVisible(true);
-        ui->pauseButton->setVisible(true);
-        ui->stopButton->setVisible(true);
-        ui->positionSlider->setVisible(true);
-        ui->currentTimeLabel->setVisible(true);
-        ui->totalTimeLabel->setVisible(true);
-        ui->volumeSlider->setVisible(true);
-        ui->volumeLabel->setVisible(true);
-        ui->fullscreenButton->setVisible(true);
-        controlHideTimer->start(); // Restart the timer
-        ui->controlsOverlay->setVisible(true); // Show the overlay widget
+        ui->controlsOverlay->setVisible(true); // Show entire overlay
         controlHideTimer->start(); 
     }
 }
@@ -109,14 +88,14 @@ void MainWindow::showControls()
 void MainWindow::toggleFullScreen()
 {
     if (isFullScreen) {
-        showNormal(); // Exit full-screen
-        videoWidget->setGeometry(0, 0, width(), height()); // Reset video size
-        showControls(); // Show controls
+        showNormal(); 
+        videoWidget->setGeometry(0, 0, width(), height()); 
+        showControls(); 
         controlHideTimer->stop();
     } else {
-        showFullScreen(); // Enter full-screen for the entire window
-        videoWidget->setGeometry(0, 0, width(), height()); // Expand video to fill the window
-        showControls(); // Show controls
+        showFullScreen(); 
+        videoWidget->setGeometry(0, 0, width(), height());
+        showControls(); 
         controlHideTimer->start();
     }
     isFullScreen = !isFullScreen;
