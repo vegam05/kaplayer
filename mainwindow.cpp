@@ -17,19 +17,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Set up video widget
+    /
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
 
-    // Initialize the control hide timer
-    controlHideTimer->setInterval(3000); // Hide controls after 3 seconds of inactivity
+    
+    controlHideTimer->setInterval(3000); 
     connect(controlHideTimer, &QTimer::timeout, this, &MainWindow::hideControls);
 
-    // Show controls when the mouse moves
+    
     videoWidget->setMouseTracking(true);
     videoWidget->installEventFilter(this);
 
-    // Connect UI elements to functionalities
+    
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::play);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
@@ -38,18 +38,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
     connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
 
-    // Initialize volume
+    
     ui->volumeSlider->setValue(50);
     mediaPlayer->setVolume(50);
 
-    // Update position and duration
+    
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
 
-    // Initialize button states
+    
     ui->pauseButton->setEnabled(false);
-    ui->controlsOverlay->setAttribute(Qt::WA_TranslucentBackground); // Optional: Make controls semi-transparent
-    ui->controlsOverlay->raise(); // Bring controls to the front
+    ui->controlsOverlay->setAttribute(Qt::WA_TranslucentBackground); 
+    ui->controlsOverlay->raise(); 
 }
 
 MainWindow::~MainWindow()
@@ -62,25 +62,25 @@ MainWindow::~MainWindow()
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_F11 || event->key() == Qt::Key_F) {
-        toggleFullScreen(); // Toggle full-screen on F11 or F key
+        toggleFullScreen(); 
     } else if (event->key() == Qt::Key_Escape && isFullScreen) {
-        toggleFullScreen(); // Exit full-screen on Escape key
+        toggleFullScreen(); 
     } else {
-        QMainWindow::keyPressEvent(event); // Pass the event to the base class
+        QMainWindow::keyPressEvent(event); 
     }
 }
 
 void MainWindow::hideControls()
 {
     if (isFullScreen) {
-        ui->controlsOverlay->setVisible(false); // Hide entire overlay
+        ui->controlsOverlay->setVisible(false); 
     }
 }
 
 void MainWindow::showControls()
 {
     if (isFullScreen) {
-        ui->controlsOverlay->setVisible(true); // Show entire overlay
+        ui->controlsOverlay->setVisible(true); 
         controlHideTimer->start(); 
     }
 }
@@ -158,9 +158,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == videoWidget) {
         if (event->type() == QEvent::MouseMove) {
-            showControls(); // Show controls on mouse move
+            showControls(); 
         }
-        // Forward key events to MainWindow
+        
         if (event->type() == QEvent::KeyPress) {
             keyPressEvent(static_cast<QKeyEvent*>(event));
             return true;
