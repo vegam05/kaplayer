@@ -4,7 +4,7 @@
 #include <QKeyEvent>
 #include <QMediaPlayer>
 #include <QVideoWidget>
-#include <QTimer> 
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -17,19 +17,34 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    /
+    // Media player setup
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
 
-    
-    controlHideTimer->setInterval(3000); 
+    // Control timer setup
+    controlHideTimer->setInterval(3000);
     connect(controlHideTimer, &QTimer::timeout, this, &MainWindow::hideControls);
 
-    
+    // Event filtering for video widget
     videoWidget->setMouseTracking(true);
     videoWidget->installEventFilter(this);
 
-    
+    // Initialize full-screen controls
+    fullscreenControlsOverlay = ui->fullscreenControlsOverlay;
+    fsPlayButton = ui->fsPlayButton;
+    fsPauseButton = ui->fsPauseButton;
+    fsStopButton = ui->fsStopButton;
+    fsPositionSlider = ui->fsPositionSlider;
+    fsExitFullscreenButton = ui->fsExitFullscreenButton;
+
+    // Connect full-screen controls
+    connect(fsPlayButton, &QPushButton::clicked, this, &MainWindow::play);
+    connect(fsPauseButton, &QPushButton::clicked, this, &MainWindow::pause);
+    connect(fsStopButton, &QPushButton::clicked, this, &MainWindow::stop);
+    connect(fsPositionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
+    connect(fsExitFullscreenButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
+
+    // Connect regular controls
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
     connect(ui->playButton, &QPushButton::clicked, this, &MainWindow::play);
     connect(ui->pauseButton, &QPushButton::clicked, this, &MainWindow::pause);
@@ -38,18 +53,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->positionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
     connect(ui->volumeSlider, &QSlider::valueChanged, mediaPlayer, &QMediaPlayer::setVolume);
 
-    
+    // Initial volume setup
     ui->volumeSlider->setValue(50);
     mediaPlayer->setVolume(50);
 
-    
+    // Media position updates
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MainWindow::updatePosition);
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MainWindow::updateDuration);
 
-    
+    // Initial UI state
     ui->pauseButton->setEnabled(false);
-    ui->controlsOverlay->setAttribute(Qt::WA_TranslucentBackground); 
-    ui->controlsOverlay->raise(); 
+    ui->controlsOverlay->setAttribute(Qt::WA_TranslucentBackground);
+    ui->controlsOverlay->raise();
+    
+    // Full-screen controls setup
+    fullscreenControlsOverlay->raise();
+    fullscreenControlsOverlay->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -62,43 +81,42 @@ MainWindow::~MainWindow()
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_F11 || event->key() == Qt::Key_F) {
-        toggleFullScreen(); 
+        toggleFullScreen();
     } else if (event->key() == Qt::Key_Escape && isFullScreen) {
-        toggleFullScreen(); 
+        toggleFullScreen();
     } else {
-        QMainWindow::keyPressEvent(event); 
+        QMainWindow::keyPressEvent(event);
     }
 }
 
 void MainWindow::hideControls()
 {
-    if (isFullScreen) {
-        ui->controlsOverlay->setVisible(false); 
+    if (isFullScreen && fullscreenControlsOverlay->isVisible()) {
+        fullscreenControlsOverlay->setVisible(false);
     }
 }
 
 void MainWindow::showControls()
 {
     if (isFullScreen) {
-        ui->controlsOverlay->setVisible(true); 
-        controlHideTimer->start(); 
+        fullscreenControlsOverlay->setVisible(true);
+        controlHideTimer->start(3000); // Reset timer on every mouse move
     }
 }
 
 void MainWindow::toggleFullScreen()
 {
     if (isFullScreen) {
-        showNormal(); 
-        videoWidget->setGeometry(0, 0, width(), height()); 
-        showControls(); 
-        controlHideTimer->stop();
+        showNormal();
+        ui->controlsOverlay->setVisible(true);
+        fullscreenControlsOverlay->setVisible(false);
     } else {
-        showFullScreen(); 
-        videoWidget->setGeometry(0, 0, width(), height());
-        showControls(); 
-        controlHideTimer->start();
+        showFullScreen();
+        ui->controlsOverlay->setVisible(false);
+        fullscreenControlsOverlay->setVisible(true);
     }
     isFullScreen = !isFullScreen;
+    controlHideTimer->start();
 }
 
 void MainWindow::openFile()
@@ -116,6 +134,8 @@ void MainWindow::play()
     isPlaying = true;
     ui->playButton->setEnabled(false);
     ui->pauseButton->setEnabled(true);
+    fsPlayButton->setEnabled(false);
+    fsPauseButton->setEnabled(true);
 }
 
 void MainWindow::pause()
@@ -124,13 +144,18 @@ void MainWindow::pause()
     isPlaying = false;
     ui->playButton->setEnabled(true);
     ui->pauseButton->setEnabled(false);
+    fsPlayButton->setEnabled(true);
+    fsPauseButton->setEnabled(false);
 }
 
-void MainWindow::stop() {
+void MainWindow::stop()
+{
     mediaPlayer->stop();
     isPlaying = false;
     ui->playButton->setEnabled(true);
     ui->pauseButton->setEnabled(false);
+    fsPlayButton->setEnabled(true);
+    fsPauseButton->setEnabled(false);
 }
 
 void MainWindow::setPosition(int position)
@@ -141,6 +166,7 @@ void MainWindow::setPosition(int position)
 void MainWindow::updatePosition(qint64 position)
 {
     ui->positionSlider->setValue(position);
+    fsPositionSlider->setValue(position); // Sync full-screen slider
     qint64 seconds = position / 1000;
     QString time = QString("%1:%2").arg(seconds / 60, 2, 10, QChar('0')).arg(seconds % 60, 2, 10, QChar('0'));
     ui->currentTimeLabel->setText(time);
@@ -149,6 +175,7 @@ void MainWindow::updatePosition(qint64 position)
 void MainWindow::updateDuration(qint64 duration)
 {
     ui->positionSlider->setRange(0, duration);
+    fsPositionSlider->setRange(0, duration); // Sync full-screen slider
     qint64 seconds = duration / 1000;
     QString time = QString("%1:%2").arg(seconds / 60, 2, 10, QChar('0')).arg(seconds % 60, 2, 10, QChar('0'));
     ui->totalTimeLabel->setText(time);
@@ -158,11 +185,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == videoWidget) {
         if (event->type() == QEvent::MouseMove) {
-            showControls(); 
-        }
-        
-        if (event->type() == QEvent::KeyPress) {
-            keyPressEvent(static_cast<QKeyEvent*>(event));
+            showControls();
             return true;
         }
     }
