@@ -35,6 +35,7 @@ private slots:
     void toggleFullScreen();
     void hideControls();
     void showControls();
+    void handleError(QMediaPlayer::Error error);
 
 private:
     Ui::MainWindow *ui;
@@ -43,6 +44,7 @@ private:
     QTimer *controlHideTimer;
     bool isPlaying;
     bool isFullScreen;
+    
 
     // Floating toolbar for full-screen mode
     QWidget *floatingToolbar;

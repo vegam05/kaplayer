@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSurfaceFormat>
+#include <QMessageBox> 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -18,13 +19,19 @@ MainWindow::MainWindow(QWidget *parent)
     , isPlaying(false)
     , isFullScreen(false)
 {
-      // Set OpenGL version to 2.0 (compatibility profile)
+    // Set up proper OpenGL format
     QSurfaceFormat format;
-    format.setVersion(2, 0);
-    format.setProfile(QSurfaceFormat::CompatibilityProfile);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    format.setVersion(2, 1);  // Changed to 2.1 for better compatibility
+    format.setProfile(QSurfaceFormat::NoProfile);  // Changed from CompatibilityProfile
+    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    format.setAlphaBufferSize(8);
     QSurfaceFormat::setDefaultFormat(format);
-    ui->setupUi(this);
 
+    ui->setupUi(this);
+    connect(mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error),
+        this, &MainWindow::handleError);
     // Media player setup
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
@@ -218,4 +225,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         }
     }
     return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::handleError(QMediaPlayer::Error error)
+{
+    if (error != QMediaPlayer::NoError) {
+        qDebug() << "Media Player Error:" << error << mediaPlayer->errorString();
+        // Optional: Show error to user
+        QMessageBox::warning(this, "Media Error", 
+            "Error playing media: " + mediaPlayer->errorString());
+    }
 }
