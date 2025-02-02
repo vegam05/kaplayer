@@ -5,6 +5,9 @@
 #include <QMediaPlayer>
 #include <QVideoWidget>
 #include <QTimer>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QSurfaceFormat>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,6 +18,11 @@ MainWindow::MainWindow(QWidget *parent)
     , isPlaying(false)
     , isFullScreen(false)
 {
+      // Set OpenGL version to 2.0 (compatibility profile)
+    QSurfaceFormat format;
+    format.setVersion(2, 0);
+    format.setProfile(QSurfaceFormat::CompatibilityProfile);
+    QSurfaceFormat::setDefaultFormat(format);
     ui->setupUi(this);
 
     // Media player setup
@@ -29,20 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
     videoWidget->setMouseTracking(true);
     videoWidget->installEventFilter(this);
 
-    // Initialize full-screen controls
-    fullscreenControlsOverlay = ui->fullscreenControlsOverlay;
-    fsPlayButton = ui->fsPlayButton;
-    fsPauseButton = ui->fsPauseButton;
-    fsStopButton = ui->fsStopButton;
-    fsPositionSlider = ui->fsPositionSlider;
-    fsExitFullscreenButton = ui->fsExitFullscreenButton;
-
-    // Connect full-screen controls
-    connect(fsPlayButton, &QPushButton::clicked, this, &MainWindow::play);
-    connect(fsPauseButton, &QPushButton::clicked, this, &MainWindow::pause);
-    connect(fsStopButton, &QPushButton::clicked, this, &MainWindow::stop);
-    connect(fsPositionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
-    connect(fsExitFullscreenButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
+    // Create the floating toolbar
+    createFloatingToolbar();
 
     // Connect regular controls
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
@@ -65,10 +61,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pauseButton->setEnabled(false);
     ui->controlsOverlay->setAttribute(Qt::WA_TranslucentBackground);
     ui->controlsOverlay->raise();
-    
-    // Full-screen controls setup
-    fullscreenControlsOverlay->raise();
-    fullscreenControlsOverlay->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -76,6 +68,41 @@ MainWindow::~MainWindow()
     delete mediaPlayer;
     delete videoWidget;
     delete ui;
+}
+
+void MainWindow::createFloatingToolbar()
+{
+    // Create the floating toolbar
+    floatingToolbar = new QWidget(this);
+    floatingToolbar->setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
+    floatingToolbar->setStyleSheet("background: rgba(0, 0, 0, 150); border-radius: 5px;");
+
+    // Layout for the floating toolbar
+    QHBoxLayout *layout = new QHBoxLayout(floatingToolbar);
+    layout->setContentsMargins(10, 5, 10, 5);
+
+    // Add buttons and slider to the toolbar
+    fsPlayButton = new QPushButton("Play", floatingToolbar);
+    fsPauseButton = new QPushButton("Pause", floatingToolbar);
+    fsStopButton = new QPushButton("Stop", floatingToolbar);
+    fsPositionSlider = new QSlider(Qt::Horizontal, floatingToolbar);
+    fsExitFullscreenButton = new QPushButton("Exit Fullscreen", floatingToolbar);
+
+    layout->addWidget(fsPlayButton);
+    layout->addWidget(fsPauseButton);
+    layout->addWidget(fsStopButton);
+    layout->addWidget(fsPositionSlider);
+    layout->addWidget(fsExitFullscreenButton);
+
+    // Connect floating toolbar buttons
+    connect(fsPlayButton, &QPushButton::clicked, this, &MainWindow::play);
+    connect(fsPauseButton, &QPushButton::clicked, this, &MainWindow::pause);
+    connect(fsStopButton, &QPushButton::clicked, this, &MainWindow::stop);
+    connect(fsPositionSlider, &QSlider::sliderMoved, this, &MainWindow::setPosition);
+    connect(fsExitFullscreenButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
+
+    // Initially hide the floating toolbar
+    floatingToolbar->hide();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -91,16 +118,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::hideControls()
 {
-    if (isFullScreen && fullscreenControlsOverlay->isVisible()) {
-        fullscreenControlsOverlay->setVisible(false);
+    if (isFullScreen) {
+        floatingToolbar->hide();
     }
 }
 
 void MainWindow::showControls()
 {
     if (isFullScreen) {
-        fullscreenControlsOverlay->setVisible(true);
-        controlHideTimer->start(3000); // Reset timer on every mouse move
+        // Position the toolbar at the bottom of the screen
+        floatingToolbar->move((width() - floatingToolbar->width()) / 2, height() - floatingToolbar->height() - 10);
+        floatingToolbar->show();
+        controlHideTimer->start(3000); // Reset the timer
     }
 }
 
@@ -109,14 +138,13 @@ void MainWindow::toggleFullScreen()
     if (isFullScreen) {
         showNormal();
         ui->controlsOverlay->setVisible(true);
-        fullscreenControlsOverlay->setVisible(false);
+        floatingToolbar->hide();
     } else {
         showFullScreen();
         ui->controlsOverlay->setVisible(false);
-        fullscreenControlsOverlay->setVisible(true);
+        showControls(); // Show the floating toolbar
     }
     isFullScreen = !isFullScreen;
-    controlHideTimer->start();
 }
 
 void MainWindow::openFile()
