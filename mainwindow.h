@@ -36,6 +36,7 @@ private slots:
     void hideControls();
     void showControls();
     void handleError(QMediaPlayer::Error error);
+    void handleMediaStatusChange(QMediaPlayer::MediaStatus status);
 
 private:
     Ui::MainWindow *ui;

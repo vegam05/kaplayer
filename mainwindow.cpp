@@ -19,14 +19,13 @@ MainWindow::MainWindow(QWidget *parent)
     , isPlaying(false)
     , isFullScreen(false)
 {
-    // Set up proper OpenGL format
+    // Robust OpenGL configuration
     QSurfaceFormat format;
+    format.setVersion(4, 5);  // Modern OpenGL version for NVIDIA
+    format.setProfile(QSurfaceFormat::CoreProfile);
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
-    format.setVersion(2, 1);  // Changed to 2.1 for better compatibility
-    format.setProfile(QSurfaceFormat::NoProfile);  // Changed from CompatibilityProfile
     format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    format.setAlphaBufferSize(8);
     QSurfaceFormat::setDefaultFormat(format);
 
     ui->setupUi(this);
@@ -35,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Media player setup
     mediaPlayer->setVideoOutput(videoWidget);
     ui->videoLayout->addWidget(videoWidget);
+    connect(mediaPlayer, &QMediaPlayer::mediaStatusChanged, 
+            this, &MainWindow::handleMediaStatusChange);
 
     // Control timer setup
     controlHideTimer->setInterval(3000);
@@ -229,10 +230,44 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::handleError(QMediaPlayer::Error error)
 {
-    if (error != QMediaPlayer::NoError) {
-        qDebug() << "Media Player Error:" << error << mediaPlayer->errorString();
-        // Optional: Show error to user
-        QMessageBox::warning(this, "Media Error", 
-            "Error playing media: " + mediaPlayer->errorString());
+    qDebug() << "Media Player Error:" << error;
+    qDebug() << "Detailed Error:" << mediaPlayer->errorString();
+    
+    QString errorMsg = "Unknown media error";
+    switch(error) {
+        case QMediaPlayer::ResourceError:
+            errorMsg = "Resource Error: Could not load media. Check GStreamer plugins.";
+            break;
+        case QMediaPlayer::FormatError:
+            errorMsg = "Format Error: Unsupported media format.";
+            break;
+        case QMediaPlayer::NetworkError:
+            errorMsg = "Network Error: Cannot access media source.";
+            break;
+        default:
+            break;
+    }
+    
+    QMessageBox::warning(this, "Media Player Error", errorMsg);
+}
+
+void MainWindow::handleMediaStatusChange(QMediaPlayer::MediaStatus status)
+{
+    qDebug() << "Media Status:" << status;
+    
+    switch(status) {
+        case QMediaPlayer::LoadingMedia:
+            qDebug() << "Loading media...";
+            break;
+        case QMediaPlayer::LoadedMedia:
+            qDebug() << "Media loaded successfully";
+            break;
+        case QMediaPlayer::InvalidMedia:
+            qDebug() << "Invalid media";
+            QMessageBox::warning(this, "Media Error", 
+                "Cannot play this media file. Check file format and codecs.");
+            break;
+        default:
+            break;
     }
 }
